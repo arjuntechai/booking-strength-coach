@@ -9,8 +9,9 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="flex items-center gap-5 text-xs text-muted-foreground">
-          <a href="#" className="hover:text-foreground">Instagram</a>
-          <a href="mailto:hello@example.com" className="hover:text-foreground">Email</a>
+          <a href="mailto:hello@example.com" className="hover:text-foreground">
+            Email
+          </a>
         </div>
       </div>
       <div className="border-t border-border">

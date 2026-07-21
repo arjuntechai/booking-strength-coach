@@ -1,5 +1,8 @@
 export const BOOKING_URL = "#schedule"; // placeholder — swap for Calendly/Cal.com URL later
 
+/** Production URL — update when domain is live (used for canonical + og:image). */
+export const SITE_URL = "https://alexmoreno-sc.com";
+
 export const COACH = {
   name: "Alex Moreno",
   role: "Strength & Conditioning Coach — Barcelona",

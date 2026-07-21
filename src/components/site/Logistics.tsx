@@ -3,7 +3,7 @@ import { LOGISTICS, FIT } from "@/data/site";
 
 export function Logistics() {
   return (
-    <section className="border-b border-border">
+    <section id="logistics" className="border-b border-border">
       <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
         <div className="max-w-2xl">
           <div className="eyebrow">The practical bit</div>

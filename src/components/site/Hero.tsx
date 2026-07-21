@@ -1,10 +1,11 @@
 import heroImg from "@/assets/hero.jpg";
 import { BookButton } from "./BookButton";
+import { scrollToElement } from "@/lib/scroll";
 
 export function Hero() {
   const scrollToSchedule = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
-    document.getElementById("schedule")?.scrollIntoView({ behavior: "smooth" });
+    scrollToElement("schedule");
   };
 
   return (

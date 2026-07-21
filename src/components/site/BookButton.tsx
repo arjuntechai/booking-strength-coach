@@ -1,4 +1,5 @@
 import { BOOKING_URL } from "@/data/site";
+import { scrollToElement } from "@/lib/scroll";
 
 type Props = {
   className?: string;
@@ -24,8 +25,7 @@ export function BookButton({ className = "", children = "Book Your Session", var
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (BOOKING_URL.startsWith("#")) {
       e.preventDefault();
-      const target = document.querySelector(BOOKING_URL);
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+      scrollToElement(BOOKING_URL.slice(1));
     }
   };
 

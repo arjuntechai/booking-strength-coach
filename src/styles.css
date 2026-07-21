@@ -62,6 +62,18 @@
 
 @layer base {
   html { color-scheme: dark; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+
+  #schedule,
+  #coach,
+  #logistics,
+  #final-cta,
+  #top {
+    scroll-margin-top: 4.5rem;
+  }
   * { border-color: var(--color-border); }
   body {
     background-color: var(--color-background);

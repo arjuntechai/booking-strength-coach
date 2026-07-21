@@ -3,6 +3,12 @@ import c2 from "@/assets/community-2.jpg";
 import c3 from "@/assets/community-3.jpg";
 import { TESTIMONIALS } from "@/data/site";
 
+const COMMUNITY_ALTS = [
+  "Small group strength training in the studio",
+  "Outdoor conditioning session along the Barcelona coast",
+  "One-on-one coaching during a barbell session",
+] as const;
+
 export function Testimonials() {
   return (
     <section className="border-b border-border">
@@ -34,10 +40,13 @@ export function Testimonials() {
 
         <div className="mt-12 grid grid-cols-3 gap-3">
           {[c1, c2, c3].map((src, i) => (
-            <figure key={i} className="aspect-[3/4] overflow-hidden rounded-md border border-border">
+            <figure
+              key={i}
+              className="aspect-[3/4] overflow-hidden rounded-md border border-border"
+            >
               <img
                 src={src}
-                alt=""
+                alt={COMMUNITY_ALTS[i]}
                 width={900}
                 height={1100}
                 loading="lazy"

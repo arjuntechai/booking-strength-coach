@@ -15,6 +15,26 @@ export type Slot = {
 
 export const DAYS: Slot["day"][] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const JS_DAY_TO_SLOT: Record<number, Slot["day"] | null> = {
+  0: null,
+  1: "Mon",
+  2: "Tue",
+  3: "Wed",
+  4: "Thu",
+  5: "Fri",
+  6: "Sat",
+};
+
+/** Default tab: today's weekday, or Monday when Sunday (no sessions). */
+export function getDefaultDay(): Slot["day"] {
+  const today = JS_DAY_TO_SLOT[new Date().getDay()];
+  return today ?? "Mon";
+}
+
+export function isToday(day: Slot["day"]): boolean {
+  return JS_DAY_TO_SLOT[new Date().getDay()] === day;
+}
+
 export const SCHEDULE: Slot[] = [
   { id: "mon-07", day: "Mon", time: "07:00", name: "Barbell Base",       focus: "Strength",     location: "Studio",  duration: "60 min", availability: "open" },
   { id: "mon-12", day: "Mon", time: "12:30", name: "Midday Conditioning", focus: "Conditioning", location: "Studio",  duration: "45 min", availability: "limited" },
