@@ -20,12 +20,14 @@ This document outlines the detailed step-by-step implementation plan for adding 
 6. **`bookings`**: `id`, `user_id`, `occurrence_id`, `status` (confirmed, cancelled_by_client, cancelled_by_admin, completed, no_show), `payment_status` (unpaid, paid_in_person, comped), `check_in`, `created_at`, `deleted_at`.
 7. **`audit_logs`**: `id`, `table_name`, `record_id`, `action`, `old_data`, `new_data`, `changed_by` (user_id), `created_at`.
 8. **`settings`**: `id` (single row pattern), `cancellation_cutoff_hours` (default 24), `timezone` (default Europe/Madrid).
+*Note: Login history is covered by Supabase Auth's built-in logs, no separate table is needed.*
 
 ## Implementation Phases
 
 ### Phase 1: Schema, RLS, Migrations, and Seed Data (Completed)
 - Create the initial Supabase migration file defining all tables.
-- Add constraints (e.g., checking `max_slots` availability before inserting a booking).
+- Add unique constraint to `bookings` (`user_id`, `occurrence_id`) to prevent users from booking the same occurrence twice.
+- *Fix overbooking guard*: Move the overbooking enforcement to a `book_session` RPC using `SELECT ... FOR UPDATE` (see Phase 3) to properly lock and count rows.
 - Create triggers for soft deletes and generic audit logging on critical tables.
 - Implement Row Level Security (RLS) policies:
   - `client_profiles`: Select/Update restricted to owner; Admin full access.
@@ -64,8 +66,8 @@ This document outlines the detailed step-by-step implementation plan for adding 
 - Build Client Dashboard: `/client/dashboard` (upcoming bookings).
 - Build Client Profile Edit Page: `/client/profile` (phone, emergency contact, goals).
 - Build Booking Details: `/client/bookings/:id`.
-- Implement Booking Action: Transactional insert into `bookings`, upgrading the user role from 'user' to 'client' on first successful booking.
-- Implement Cancellation Action via Edge Function: Enforces cancellation cutoff window (settings driven) server-side.
+- Implement `book_session` RPC (security definer): A single transaction that locks the occurrence (`SELECT ... FOR UPDATE`), checks remaining slots, inserts the booking, and upgrades role user -> client if this is their first booking.
+- Implement `cancel_booking` RPC: Enforces cancellation cutoff window (settings driven) server-side.
 
 **Done when:**
 - [ ] Visitors can view the schedule and session details without logging in.
@@ -77,7 +79,7 @@ This document outlines the detailed step-by-step implementation plan for adding 
 - Build Admin Dashboard: `/admin/dashboard` (high level stats, upcoming sessions).
 - Build Session Management:
   - Templates CRUD: Create/Edit/Soft Delete templates (managing auto-generated unique slugs).
-  - Schedule Occurrences: Assign templates to dates/times (stored UTC, rendered in Settings Timezone).
+  - Schedule Occurrences: Assign templates to dates/times (stored UTC, rendered in Settings Timezone). Include a bulk "repeat this occurrence weekly for N weeks" action (skip full availability rules for now).
 - Build Booking Management: Mark attendance (`completed`/`no_show`), update `payment_status` (paid_in_person, etc.).
 - Build Client Management: `/admin/clients` list, and `/admin/clients/:id` (detailed view with full history, injury notes, role/ban controls).
 - Build Settings Page: Manage cancellation cutoff windows, timezone, and locations.
