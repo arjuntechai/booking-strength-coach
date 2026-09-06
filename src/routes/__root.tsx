@@ -9,6 +9,19 @@ import {
 } from "@tanstack/react-router";
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect, type ReactNode } from "react";
+import * as Sentry from "@sentry/react";
+
+if (typeof window !== "undefined") {
+  Sentry.init({
+    dsn: "https://9517096ddaff48a2f59faab026b95a2e@o4511856125607936.ingest.de.sentry.io/4512037300666448",
+    dataCollection: {
+      // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
+      // https://docs.sentry.io/platforms/javascript/guides/react/configuration/options/#dataCollection
+      // userInfo: false,
+      // httpBodies: []
+    }
+  });
+}
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -39,6 +52,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    Sentry.captureException(error);
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
