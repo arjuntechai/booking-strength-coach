@@ -31,9 +31,22 @@ function LoginComponent() {
 
       if (data.user) {
         toast.success('Logged in successfully');
-        navigate({ to: '/' });
+        
+        // Fetch user role to determine where to redirect
+        const { data: userData } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
+        if (userData?.role === 'admin') {
+          navigate({ to: '/admin/dashboard' });
+        } else {
+          navigate({ to: '/user/dashboard' });
+        }
       }
     } catch (error: any) {
+      console.error("Login error:", error);
       toast.error(error.message || 'Failed to login');
     } finally {
       setIsLoading(false);

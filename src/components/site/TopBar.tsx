@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { BookButton } from "./BookButton";
 import { useScrollSpy } from "@/hooks/use-scroll-spy";
 import { scrollToElement } from "@/lib/scroll";
@@ -58,9 +59,23 @@ export function TopBar() {
           })}
         </nav>
 
-        <BookButton size="sm" className="ml-auto shrink-0">
-          Book
-        </BookButton>
+        <div className="ml-auto flex shrink-0 items-center gap-4">
+          <Link
+            to="/login"
+            className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Login
+          </Link>
+          <Link
+            to="/signup"
+            className="text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Sign up
+          </Link>
+          <BookButton size="sm">
+            Book
+          </BookButton>
+        </div>
       </div>
     </header>
   );
