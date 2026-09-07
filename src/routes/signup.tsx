@@ -50,7 +50,13 @@ function SignupComponent() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+      <div className="w-full max-w-md">
+      <div className="mb-4">
+        <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+          ← Back to home
+        </Link>
+      </div>
+      <Card className="w-full">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
           <CardDescription>Enter your details below to create your account</CardDescription>
@@ -114,6 +120,7 @@ function SignupComponent() {
           </CardFooter>
         </form>
       </Card>
+      </div>
     </div>
   );
 }

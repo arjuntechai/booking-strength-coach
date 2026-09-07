@@ -60,6 +60,58 @@ This document outlines the detailed step-by-step implementation plan for adding 
 - [ ] Attempting to access an admin route as a client redirects to `/403`.
 - [ ] Banned users are redirected to `/suspended`.
 
+---
+
+### Phase 2.5: Profile & Navigation UX
+
+This phase covers the user-facing profile system and key navigation improvements that should be completed before the full client booking flow.
+
+#### 2.5.1 — Home Button on Auth Pages
+Add a "← Home" link to auth pages so users can always return to the landing page from any auth screen.
+
+- [ ] Add a home link above or below the card on `/login`
+- [ ] Add a home link above or below the card on `/signup`
+- [ ] Add a home link on `/forgot-password` for consistency
+- [ ] Add a home link on `/reset-password` for consistency
+
+#### 2.5.2 — Profile Avatar Dropdown in `TopBar.tsx` (public home page)
+Replace the static Login / Sign up links in `TopBar.tsx` with a session-aware component:
+
+- **Unauthenticated state**: show existing Login + Sign up links (no change).
+- **Authenticated state**: show a circular avatar button using `avatar_url` from Supabase Auth `user_metadata` if present, otherwise a styled placeholder showing the user's initials. Clicking opens a dropdown with:
+  - **Profile** → `/profile`
+  - **Dashboard** → `/user/dashboard` or `/admin/dashboard` depending on role
+  - **Log out** → signs out and stays on `/` (home), not redirected to `/login`
+
+**Checklist:**
+- [ ] Create `src/hooks/use-current-user.ts` — subscribes to `supabase.auth.onAuthStateChange`, fetches `role` from `public.users`, returns `{ user, role, loading }`.
+- [ ] Update `TopBar.tsx` to conditionally render avatar dropdown (authenticated) or Login/Signup links (unauthenticated).
+- [ ] Build the avatar button: circular image if `avatar_url` exists, else styled initials placeholder with branded colours.
+- [ ] Build the dropdown menu with Profile, Dashboard, and Log out items using accessible markup (focus trap, keyboard nav, click-outside-to-close).
+- [ ] Ensure Log out in the dropdown calls `supabase.auth.signOut()` and navigates to `/` (not `/login`).
+
+#### 2.5.3 — Profile Page (`/profile`)
+A unified profile page accessible to all authenticated roles.
+
+- [ ] Create `src/routes/profile.tsx` at path `/profile`.
+- [ ] Guard the route: redirect unauthenticated users to `/login`.
+- [ ] Fetch `supabase.auth.getUser()` for email and `avatar_url`; fetch `public.users` for role.
+- [ ] **Avatar section**: circular image from `avatar_url` if present; otherwise a large styled initials placeholder. *(No avatar upload in this phase.)*
+- [ ] **Account info section**: email address (read-only), role badge styled per role (user / client / admin).
+- [ ] **Personal details section** (editable form): first name, last name (from `auth.user_metadata`); phone shown only for `client` and `admin` roles (from `client_profiles`).
+- [ ] **Save action**: calls `supabase.auth.updateUser({ data: { first_name, last_name } })` and upserts `client_profiles` for eligible roles. Show a success toast via `sonner`.
+- [ ] Add a back link / breadcrumb to return to the relevant dashboard or home.
+- [ ] Style to match the branded design system (dark background, `bg-card` surface, `primary` accent, Space Grotesk headings, consistent spacing).
+
+#### 2.5.4 — Dashboard Headers: Avatar Dropdown
+Replace the plain Logout button in `admin.tsx` and `user.tsx` layout headers with the same avatar dropdown component built in 2.5.2.
+
+- [ ] Update `user.tsx` header — swap plain Logout `<Button>` for the avatar dropdown component.
+- [ ] Update `admin.tsx` header — swap plain Logout `<Button>` for the avatar dropdown component.
+- [ ] Confirm logout from either dashboard redirects to `/` (home), not `/login`.
+
+---
+
 ### Phase 3: Client Booking Flow and Public Pages
 - Build Public Pages at root: `/schedule` (browsing occurrences) and `/session/:slug` (session details using the new template slug).
 - Implement UI to show Open / Few Spots / Full states driven by `occurrence_availability`.

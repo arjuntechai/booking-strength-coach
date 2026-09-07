@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, Outlet, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/button';
@@ -50,7 +50,15 @@ function AdminLayout() {
     <div className="min-h-screen bg-background">
       <header className="border-b p-4 flex justify-between items-center bg-card">
         <h1 className="text-xl font-bold">Admin Portal</h1>
-        <Button onClick={handleLogout} variant="outline">Logout</Button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            ← Home
+          </Link>
+          <Button onClick={handleLogout} variant="outline">Logout</Button>
+        </div>
       </header>
       <main className="p-4">
         <Outlet />
