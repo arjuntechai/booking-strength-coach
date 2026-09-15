@@ -30,6 +30,9 @@ function ProfilePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [emergencyContact, setEmergencyContact] = useState("");
+  const [injuryNotes, setInjuryNotes] = useState("");
+  const [goals, setGoals] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,16 +52,21 @@ function ProfilePage() {
     }
   }, [user]);
 
-  // Fetch phone from client_profiles for clients and admins
+  // Fetch profile fields for clients and admins
   useEffect(() => {
-    if (!user || (role !== "client" && role !== "admin")) return;
+    if (!user || (role !== "client" && role !== "admin" && role !== "user")) return;
     supabase
       .from("client_profiles")
-      .select("phone")
+      .select("phone, emergency_contact, injury_notes, goals")
       .eq("user_id", user.id)
       .single()
       .then(({ data }) => {
-        if (data?.phone) setPhone(data.phone);
+        if (data) {
+          setPhone(data.phone || "");
+          setEmergencyContact(data.emergency_contact || "");
+          setInjuryNotes(data.injury_notes || "");
+          setGoals(data.goals || "");
+        }
       });
   }, [user, role]);
 
@@ -73,10 +81,18 @@ function ProfilePage() {
       });
       if (authError) throw authError;
 
-      if (role === "client" || role === "admin") {
+      if (role === "client" || role === "admin" || role === "user") {
         const { error: profileError } = await supabase
           .from("client_profiles")
-          .upsert({ user_id: user.id, first_name: firstName, last_name: lastName, phone });
+          .upsert({ 
+            user_id: user.id, 
+            first_name: firstName, 
+            last_name: lastName, 
+            phone,
+            emergency_contact: emergencyContact,
+            injury_notes: injuryNotes,
+            goals
+          });
         if (profileError) throw profileError;
       }
 
@@ -263,17 +279,48 @@ function ProfilePage() {
             <p className="text-xs text-muted-foreground">Email cannot be changed here.</p>
           </div>
 
-          {(role === "client" || role === "admin") && (
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+34 600 000 000"
-              />
-            </div>
+          {(role === "client" || role === "admin" || role === "user") && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+34 600 000 000"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="emergencyContact">Emergency Contact</Label>
+                <Input
+                  id="emergencyContact"
+                  value={emergencyContact}
+                  onChange={(e) => setEmergencyContact(e.target.value)}
+                  placeholder="Name & Number"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="goals">Goals</Label>
+                <textarea
+                  id="goals"
+                  value={goals}
+                  onChange={(e) => setGoals(e.target.value)}
+                  placeholder="What are your main fitness goals?"
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="injuryNotes">Injury Notes</Label>
+                <textarea
+                  id="injuryNotes"
+                  value={injuryNotes}
+                  onChange={(e) => setInjuryNotes(e.target.value)}
+                  placeholder="Any previous injuries or conditions?"
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </div>
+            </>
           )}
 
           <Button type="submit" className="w-full" disabled={isSaving}>

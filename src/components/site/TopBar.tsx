@@ -158,7 +158,10 @@ export function TopBar() {
         </nav>
 
         <div className="ml-auto flex shrink-0 items-center gap-4">
-          {!loading && (
+          {loading ? (
+            // Skeleton placeholder keeps layout stable while auth resolves
+            <div className="h-8 w-8 rounded-full bg-border/50 animate-pulse" aria-hidden="true" />
+          ) : (
             <>
               {user ? (
                 <AvatarDropdown />

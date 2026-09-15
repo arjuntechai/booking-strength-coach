@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/profiles/$userId")({
   component: AdminSingleProfile,
@@ -31,6 +33,14 @@ function AdminSingleProfile() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [emergencyContact, setEmergencyContact] = useState("");
+  const [injuryNotes, setInjuryNotes] = useState("");
+  const [goals, setGoals] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     async function fetchProfile() {
       const { data, error } = await supabase
@@ -48,12 +58,56 @@ function AdminSingleProfile() {
         console.error("Error fetching profile:", error);
       } else {
         setProfile(data);
+        const cp = data.client_profiles || {};
+        setFirstName(cp.first_name || "");
+        setLastName(cp.last_name || "");
+        setPhone(cp.phone || "");
+        setEmergencyContact(cp.emergency_contact || "");
+        setInjuryNotes(cp.injury_notes || "");
+        setGoals(cp.goals || "");
       }
       setLoading(false);
     }
-    
     fetchProfile();
   }, [userId]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("client_profiles")
+        .upsert({
+          user_id: userId,
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          emergency_contact: emergencyContact,
+          injury_notes: injuryNotes,
+          goals
+        });
+      
+      if (error) throw error;
+      toast.success("Profile updated successfully");
+      
+      setProfile({
+        ...profile,
+        client_profiles: {
+          ...(profile.client_profiles || {}),
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          emergency_contact: emergencyContact,
+          injury_notes: injuryNotes,
+          goals
+        }
+      });
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (loading) {
     return <div className="p-8">Loading profile...</div>;
@@ -93,55 +147,59 @@ function AdminSingleProfile() {
         </div>
       </div>
 
-      <div className="mt-10 rounded-xl border border-border bg-card p-6 space-y-6">
+      <form onSubmit={handleSave} className="mt-10 rounded-xl border border-border bg-card p-6 space-y-6">
         <h2 className="font-display text-base font-semibold tracking-tight">
-          Read-only Profile Data
+          Edit Profile Data
         </h2>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>First name</Label>
-            <Input value={cp.first_name || ''} readOnly className="opacity-70 bg-muted" />
+            <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label>Last name</Label>
-            <Input value={cp.last_name || ''} readOnly className="opacity-70 bg-muted" />
+            <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
           </div>
         </div>
 
         <div className="space-y-2">
           <Label>Email</Label>
-          <Input value={profile.email} readOnly className="opacity-70 bg-muted" />
+          <Input value={profile.email} readOnly disabled className="opacity-70 bg-muted cursor-not-allowed" />
         </div>
 
         <div className="space-y-2">
           <Label>Phone</Label>
-          <Input value={cp.phone || ''} readOnly className="opacity-70 bg-muted" />
+          <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
         </div>
         
         <div className="space-y-2">
           <Label>Emergency Contact</Label>
-          <Input value={cp.emergency_contact || ''} readOnly className="opacity-70 bg-muted" />
+          <Input value={emergencyContact} onChange={(e) => setEmergencyContact(e.target.value)} />
         </div>
 
         <div className="space-y-2">
           <Label>Goals</Label>
           <textarea 
-            value={cp.goals || ''} 
-            readOnly 
-            className="flex min-h-[80px] w-full rounded-md border border-input bg-muted px-3 py-2 text-sm opacity-70" 
+            value={goals} 
+            onChange={(e) => setGoals(e.target.value)}
+            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" 
           />
         </div>
         
         <div className="space-y-2">
           <Label>Injury Notes</Label>
           <textarea 
-            value={cp.injury_notes || ''} 
-            readOnly 
-            className="flex min-h-[80px] w-full rounded-md border border-input bg-muted px-3 py-2 text-sm opacity-70" 
+            value={injuryNotes} 
+            onChange={(e) => setInjuryNotes(e.target.value)}
+            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50" 
           />
         </div>
-      </div>
+
+        <Button type="submit" className="w-full" disabled={isSaving}>
+          {isSaving ? "Saving…" : "Save changes"}
+        </Button>
+      </form>
     </div>
   );
 }
