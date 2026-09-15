@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { Camera } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,8 @@ function ProfilePage() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Guard: redirect if unauthenticated once loading is done
   useEffect(() => {
@@ -85,6 +88,51 @@ function ProfilePage() {
     }
   };
 
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be smaller than 2MB");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: data.publicUrl }
+      });
+
+      if (updateError) throw updateError;
+      
+      toast.success("Profile picture updated");
+    } catch (error: any) {
+      toast.error(error.message ?? "Failed to upload image");
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) {
+         fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const dashboardPath = role === "admin" ? "/admin/dashboard" : "/user/dashboard";
 
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
@@ -124,7 +172,25 @@ function ProfilePage() {
       <main className="mx-auto max-w-2xl px-5 py-12 sm:px-8">
         {/* Avatar + identity */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <div className="relative">
+          <div 
+            className="relative group cursor-pointer"
+            onClick={handleAvatarClick}
+          >
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+            {isUploadingAvatar && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-background/50">
+                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            )}
+            <div className="absolute inset-0 z-10 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="text-white w-6 h-6" />
+            </div>
             {avatarUrl ? (
               <img
                 src={avatarUrl}

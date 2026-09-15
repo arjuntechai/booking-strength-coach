@@ -19,7 +19,9 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as UserRouteImport } from './routes/user'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminProfilesRouteImport } from './routes/admin.profiles'
 import { Route as UserDashboardRouteImport } from './routes/user.dashboard'
+import { Route as AdminProfilesUserIdRouteImport } from './routes/admin.profiles.$userId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,10 +73,20 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminProfilesRoute = AdminProfilesRouteImport.update({
+  id: '/profiles',
+  path: '/profiles',
+  getParentRoute: () => AdminRoute,
+} as any)
 const UserDashboardRoute = UserDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => UserRoute,
+} as any)
+const AdminProfilesUserIdRoute = AdminProfilesUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => AdminProfilesRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -88,7 +100,9 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/user': typeof UserRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/profiles': typeof AdminProfilesRouteWithChildren
   '/user/dashboard': typeof UserDashboardRoute
+  '/admin/profiles/$userId': typeof AdminProfilesUserIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -101,7 +115,9 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/user': typeof UserRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/profiles': typeof AdminProfilesRouteWithChildren
   '/user/dashboard': typeof UserDashboardRoute
+  '/admin/profiles/$userId': typeof AdminProfilesUserIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -115,7 +131,9 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/user': typeof UserRouteWithChildren
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/profiles': typeof AdminProfilesRouteWithChildren
   '/user/dashboard': typeof UserDashboardRoute
+  '/admin/profiles/$userId': typeof AdminProfilesUserIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -130,7 +148,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/user'
     | '/admin/dashboard'
+    | '/admin/profiles'
     | '/user/dashboard'
+    | '/admin/profiles/$userId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -143,7 +163,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/user'
     | '/admin/dashboard'
+    | '/admin/profiles'
     | '/user/dashboard'
+    | '/admin/profiles/$userId'
   id:
     | '__root__'
     | '/'
@@ -156,7 +178,9 @@ export interface FileRouteTypes {
     | '/signup'
     | '/user'
     | '/admin/dashboard'
+    | '/admin/profiles'
     | '/user/dashboard'
+    | '/admin/profiles/$userId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -243,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/profiles': {
+      id: '/admin/profiles'
+      path: '/profiles'
+      fullPath: '/admin/profiles'
+      preLoaderRoute: typeof AdminProfilesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/user/dashboard': {
       id: '/user/dashboard'
       path: '/dashboard'
@@ -250,15 +281,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UserDashboardRouteImport
       parentRoute: typeof UserRoute
     }
+    '/admin/profiles/$userId': {
+      id: '/admin/profiles/$userId'
+      path: '/$userId'
+      fullPath: '/admin/profiles/$userId'
+      preLoaderRoute: typeof AdminProfilesUserIdRouteImport
+      parentRoute: typeof AdminProfilesRoute
+    }
   }
 }
 
+interface AdminProfilesRouteChildren {
+  AdminProfilesUserIdRoute: typeof AdminProfilesUserIdRoute
+}
+
+const AdminProfilesRouteChildren: AdminProfilesRouteChildren = {
+  AdminProfilesUserIdRoute: AdminProfilesUserIdRoute,
+}
+
+const AdminProfilesRouteWithChildren = AdminProfilesRoute._addFileChildren(
+  AdminProfilesRouteChildren,
+)
+
 interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminProfilesRoute: typeof AdminProfilesRouteWithChildren
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminProfilesRoute: AdminProfilesRouteWithChildren,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

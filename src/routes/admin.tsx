@@ -50,14 +50,26 @@ function AdminLayout() {
     <div className="min-h-screen bg-background">
       <header className="border-b p-4 flex justify-between items-center bg-card">
         <h1 className="text-xl font-bold">Admin Portal</h1>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <Link
+            to="/admin/dashboard"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Dashboard
+          </Link>
+          <Link
+            to="/admin/profiles"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Profiles
+          </Link>
           <Link
             to="/"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground ml-2"
           >
             ← Home
           </Link>
-          <Button onClick={handleLogout} variant="outline">Logout</Button>
+          <Button onClick={handleLogout} variant="outline" className="ml-2">Logout</Button>
         </div>
       </header>
       <main className="p-4">
